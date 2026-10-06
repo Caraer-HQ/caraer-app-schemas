@@ -256,7 +256,77 @@
       "type": "object",
       "required": ["name", "type"],
       "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "SECRET"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "defaultValue": {
+                "type": "null"
+              },
+              "value": {
+                "type": "null"
+              }
+            },
+            "description": "Secrets are supplied per installation and stored in its encrypted vault. Reads return hasValue. Omitted values preserve secrets; clearValue=true deletes them."
+          }
+        }
+      ],
       "properties": {
+        "hasValue": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "readOnly": true,
+          "description": "SECRET presence; the value is never returned."
+        },
+        "clearValue": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "writeOnly": true,
+          "description": "Explicitly remove a SECRET installation value."
+        },
+        "itemFields": {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/settingField"
+              },
+              {
+                "not": {
+                  "properties": {
+                    "type": {
+                      "enum": [
+                        "SECRET",
+                        "REPEATABLE"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ]
+                }
+              }
+            ]
+          },
+          "description": "Row settings cannot contain SECRET or nested REPEATABLE fields. Declare named installation secrets outside rows."
+        },
+        "actionSource": {
+          "$ref": "#/$defs/actionSource"
+        },
         "name": {
           "type": "string",
           "minLength": 1,
@@ -283,7 +353,9 @@
             "MAPPING",
             "FILE",
             "MULTI_FILE",
-            "SECRET"
+            "SECRET",
+            "ACTION",
+            "REPEATABLE"
           ],
           "description": "SINGLE_SELECT / MULTI_SELECT may use static options or a SERVERLESS optionsSource (see google_calendars). OBJECT_* and PROPERTY_* pick from the company schema. MAPPING maps properties between objects."
         },
@@ -490,6 +562,29 @@
         "scopes": {
           "type": "array",
           "items": { "type": "string" }
+        }
+      }
+    },
+    "actionSource": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "SERVERLESS",
+          "description": "Only SERVERLESS is supported. The named function runs when the installer clicks the button."
+        },
+        "serverlessFunctionName": {
+          "type": "string",
+          "description": "Local/deployed function name (preferred). Example: google-sync."
+        },
+        "serverlessFunctionUuid": {
+          "type": "string",
+          "description": "Remote function UUID. Optional when serverlessFunctionName is set; push fills it."
+        },
+        "enqueue": {
+          "type": "boolean",
+          "description": "When true (default), queue an app job. When false, invoke on the request thread."
         }
       }
     }
