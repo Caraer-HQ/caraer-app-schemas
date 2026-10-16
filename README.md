@@ -30,3 +30,21 @@ Put this at the top of `app.caraer.yaml`:
 ## Docs
 
 - [How to create a Caraer app](https://developer.caraer.com/blog/2026-08-23-how-to-create-a-caraer-app)
+
+
+## Markdown settings
+
+A display field can show static Markdown or load it from an app function:
+
+```yaml
+- name: status
+  type: MARKDOWN
+  label: Status
+  text: "**Loading status…**"
+  contentSource:
+    type: SERVERLESS
+    serverlessFunctionName: report
+  refreshIntervalSeconds: 15
+```
+
+`text` alone is static. A `contentSource` function returns a JSON string or `{ "markdown": "**Ready**" }`. It is invoked automatically in the current installation and authenticated viewer context, and must be read-only. An optional refresh interval is 10–3600 seconds. Markdown fields do not store values and cannot be required or control visibility.
