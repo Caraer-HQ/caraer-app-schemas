@@ -258,6 +258,10 @@
       "additionalProperties": true,
       "allOf": [
         {
+          "if": {"properties": {"type": {"const": "MARKDOWN"}}, "required": ["type"]},
+          "then": {"properties": {"required": {"const": false}, "value": {"type": "null"}, "defaultValue": {"type": "null"}}}
+        },
+        {
           "if": {
             "properties": {
               "type": {
@@ -327,6 +331,9 @@
         "actionSource": {
           "$ref": "#/$defs/actionSource"
         },
+        "text": {"type": "string", "description": "Static Markdown for a MARKDOWN display field."},
+        "contentSource": {"$ref": "#/$defs/contentSource"},
+        "refreshIntervalSeconds": {"type": "integer", "minimum": 10, "maximum": 3600},
         "name": {
           "type": "string",
           "minLength": 1,
@@ -355,6 +362,7 @@
             "MULTI_FILE",
             "SECRET",
             "ACTION",
+            "MARKDOWN",
             "REPEATABLE"
           ],
           "description": "SINGLE_SELECT / MULTI_SELECT may use static options or a SERVERLESS optionsSource (see google_calendars). OBJECT_* and PROPERTY_* pick from the company schema. MAPPING maps properties between objects."
@@ -564,6 +572,18 @@
           "items": { "type": "string" }
         }
       }
+    },
+    "contentSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {"const": "SERVERLESS"},
+        "serverlessFunctionName": {"type": "string", "minLength": 1},
+        "serverlessFunctionUuid": {"type": "string", "minLength": 1}
+      },
+      "anyOf": [{"required": ["serverlessFunctionName"]}, {"required": ["serverlessFunctionUuid"]}],
+      "description": "Read-only function returning a Markdown string or {markdown: string}, loaded automatically in the viewer's installation context."
     },
     "actionSource": {
       "type": "object",
