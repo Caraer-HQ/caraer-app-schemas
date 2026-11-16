@@ -363,6 +363,7 @@
             "SECRET",
             "ACTION",
             "MARKDOWN",
+            "INFO",
             "REPEATABLE"
           ],
           "description": "SINGLE_SELECT / MULTI_SELECT may use static options or a SERVERLESS optionsSource (see google_calendars). OBJECT_* and PROPERTY_* pick from the company schema. MAPPING maps properties between objects."
@@ -449,7 +450,10 @@
     },
     "appBar": {
       "type": "object",
-      "required": ["location", "label"],
+      "required": [
+        "location",
+        "label"
+      ],
       "additionalProperties": true,
       "properties": {
         "location": {
@@ -459,7 +463,8 @@
             "RECORD_OVERVIEW",
             "RECORD_DETAIL",
             "TOOL_BAR",
-            "TRAIT_BAR"
+            "TRAIT_BAR",
+            "RECORD_TRAIT"
           ],
           "description": "RECORD_PREVIEW and RECORD_OVERVIEW are action dialogs (webhook + optional settingsSchema). RECORD_DETAIL, TOOL_BAR, and TRAIT_BAR are iframe surfaces (iframeUrl)."
         },
@@ -473,7 +478,10 @@
           "minLength": 1,
           "description": "Unique bar name. Used to reuse the existing AppBar node when uuid is omitted."
         },
-        "label": { "type": "string", "minLength": 1 },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
         "actionLabel": {
           "type": "string",
           "description": "Primary button label in the action dialog."
@@ -486,20 +494,79 @@
           "type": "string",
           "description": "Copy under the dialog title for action-based bars."
         },
-        "icon": { "type": "string" },
+        "icon": {
+          "type": "string"
+        },
         "iframeUrl": {
           "type": "string",
           "description": "Iframe URL. Supports {recordUuid}, {object}, {viewId}, {trait}, {companyUuid}."
         },
         "settingsSchema": {
           "type": "array",
-          "items": { "$ref": "#/$defs/settingField" },
+          "items": {
+            "$ref": "#/$defs/settingField"
+          },
           "description": "Fields collected in the action dialog before the webhook runs."
+        },
+        "capability": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]{0,99}$",
+          "description": "Provider-neutral app action protocol, such as events.video or events.availability."
+        },
+        "capabilityFunction": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+          "description": "App-owned function name returning {available, operations, reason} for the current caller and record context."
+        },
+        "requiredUserScopes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          },
+          "description": "Literal caller permissions required for action discovery and invocation."
         },
         "webhook": {
           "$ref": "#/$defs/appBarWebhook"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "anyOf": [
+              {
+                "required": [
+                  "capability"
+                ]
+              },
+              {
+                "required": [
+                  "capabilityFunction"
+                ]
+              }
+            ]
+          },
+          "then": {
+            "required": [
+              "capability",
+              "capabilityFunction",
+              "requiredUserScopes"
+            ],
+            "properties": {
+              "location": {
+                "enum": [
+                  "RECORD_PREVIEW",
+                  "RECORD_OVERVIEW",
+                  "RECORD_TRAIT"
+                ]
+              },
+              "requiredUserScopes": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "appBarWebhook": {
       "type": "object",
