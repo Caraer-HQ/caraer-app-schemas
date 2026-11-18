@@ -258,6 +258,11 @@
       "additionalProperties": true,
       "allOf": [
         {
+          "if": { "properties": { "type": { "const": "FILTER" } }, "required": ["type"] },
+          "then": { "required": ["filterObject"] },
+          "else": { "not": { "required": ["filterObject"] } }
+        },
+        {
           "if": {"properties": {"type": {"const": "MARKDOWN"}}, "required": ["type"]},
           "then": {"properties": {"required": {"const": false}, "value": {"type": "null"}, "defaultValue": {"type": "null"}}}
         },
@@ -358,6 +363,7 @@
             "PROPERTY_MULTI_SELECT",
             "SWITCH",
             "MAPPING",
+            "FILTER",
             "FILE",
             "MULTI_FILE",
             "SECRET",
@@ -394,6 +400,11 @@
           "type": "array",
           "items": { "$ref": "#/$defs/settingCondition" },
           "description": "Show and validate this field only while every condition holds."
+        },
+        "filterObject": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+          "description": "Required for FILTER: internal target object name. Value uses the standard record filter groups/items structure."
         },
         "valueScope": {
           "type": "string",
